@@ -29,7 +29,8 @@ void copyFilesToClipboard(std::vector<std::filesystem::path> const &paths,
 
   auto listSizeBytes = sizeof(char) * filenameList.size();
 
-  HDROP hdrop = (HDROP)(GlobalAlloc(GHND, listSizeBytes + sizeof(DROPFILES)));
+  HDROP hdrop =
+      static_cast<HDROP>(GlobalAlloc(GHND, listSizeBytes + sizeof(DROPFILES)));
   DROPFILES *dropfiles = static_cast<DROPFILES *>(GlobalLock(hdrop));
   dropfiles->pFiles = sizeof(DROPFILES);
   dropfiles->fWide = false;

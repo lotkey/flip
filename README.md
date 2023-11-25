@@ -102,3 +102,111 @@ $> cmake --install .
 ```
 
 Add the directory from the `cmake` output in [the configure step](#configure-the-build) to your `PATH` environment variable to make `flip` executable from anywhere within `cmd` or `powershell`.
+
+## How It Works
+
+The Windows clipboard supports data in [many formats](https://learn.microsoft.com/en-us/windows/win32/dataxchg/clipboard-formats). For example, the `CF_TEXT` format is used for copying plain text to the clipboard.
+
+The [`CF_HDROP` format](https://learn.microsoft.com/en-us/windows/win32/shell/clipboard#cf_hdrop) is used for copying files to the clipboard in drag-and-drop operations. The `HDROP` structure is written to the clipboard and the receiving application is responsible for parsing it.
+
+Along with the `HDROP` structure, a list of paths of the files to copy is written to the clipboard. The paths are written as a contiguous, null-terminated array of null-terminated C-strings. This list of paths is written directly after the `HDROP` structure in memory.
+
+In order to copy files `C:\picture.png` and `C:\text.txt`, the following structure is written to the clipboard:
+
+<table>
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Data</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>DROPFILES</code></td>
+            <td>
+                <table>
+                    <thead>
+                        <trow>
+                            <th>Type</th>
+                            <th>Data</th>
+                        </trow>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>DWORD</code></td>
+                            <td>Offset to the start of the file list</td>
+                        </tr>
+                        <tr>
+                            <td><code>POINT</code></td>
+                            <td>
+                                <table>
+                                    <thead>
+                                        <trow>
+                                            <th>Type</th>
+                                            <th>Data</th>
+                                        </trow>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><code>LONG</code></td>
+                                            <td>x-coordinate of the drop-point</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>LONG</code></td>
+                                            <td>y-coordinate of the drop-point</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>BOOL</code></td>
+                            <td><code>true</code> if the drop-point is on a non-client area and the drop-point is in screen coordinates</td>
+                        </tr>
+                        <tr>
+                            <td><code>BOOL</code></td>
+                            <td><code>true</code> if using Unicode characters</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td><code>char *</code></td>
+            <td>
+                <table>
+                    <tbody>
+                        <tr><td><code>C</code></td></tr>
+                        <tr><td><code>:</code></td></tr>
+                        <tr><td><code>\\</code></td></tr>
+                        <tr><td><code>p</code></td></tr>
+                        <tr><td><code>i</code></td></tr>
+                        <tr><td><code>c</code></td></tr>
+                        <tr><td><code>t</code></td></tr>
+                        <tr><td><code>u</code></td></tr>
+                        <tr><td><code>r</code></td></tr>
+                        <tr><td><code>e</code></td></tr>
+                        <tr><td><code>.</code></td></tr>
+                        <tr><td><code>p</code></td></tr>
+                        <tr><td><code>n</code></td></tr>
+                        <tr><td><code>g</code></td></tr>
+                        <tr><td><code>\0</code></td></tr>
+                        <tr><td><code>C</code></td></tr>
+                        <tr><td><code>:</code></td></tr>
+                        <tr><td><code>\\</code></td></tr>
+                        <tr><td><code>t</code></td></tr>
+                        <tr><td><code>e</code></td></tr>
+                        <tr><td><code>x</code></td></tr>
+                        <tr><td><code>t</code></td></tr>
+                        <tr><td><code>.</code></td></tr>
+                        <tr><td><code>t</code></td></tr>
+                        <tr><td><code>x</code></td></tr>
+                        <tr><td><code>t</code></td></tr>
+                        <tr><td><code>\0</code></td></tr>
+                        <tr><td><code>\0</code></td></tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </tbody>
+</table>
